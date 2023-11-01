@@ -1,0 +1,76 @@
+<project name="Mario Forever" default="dist" basedir=".">
+
+    <description>
+        Mario Forever v0.2
+    </description>
+
+    <!-- set global properties for this build -->
+    <property name="src" location="src"/>
+    <property name="res" location="res"/>
+    <property name="gamedata" location="gamedata"/>
+    <property name="build" location="build"/>
+    <property name="dist" location="dist"/>
+
+    <!-- set classpaths used for executions -->
+    <path id="FrameLauncher-classpath">
+        <fileset dir="${dist}/">
+            <include name="MarioForever.jar"/>
+            <include name="gamedata"/>
+            <include name="res"/>
+        </fileset>
+    </path>
+
+    <!-- set classpaths used for level editor -->
+    <path id="LevelEditor-classpath">
+        <file name="${build}"/>
+        <fileset dir="${build}/">
+            <include name="gamedata"/>
+            <include name="res"/>
+        </fileset>
+    </path>
+
+    <target name="init">
+        <tstamp/>
+        <!-- Create the time stamp -->
+        <mkdir dir="${build}"/>
+        <!-- Create the build directory structure used by compile -->
+    </target>
+
+    <target name="compile" depends="init" description="Compile Source">
+        <!-- Compile the java code from ${src} into ${build} -->
+        <javac srcdir="${src}" destdir="${build}"/>
+
+        <!-- copy gamedata and res into dist -->
+        <copydir src="/res" dest="${build}/res"/>
+        <copydir src="${gamedata}" dest="${build}/gamedata"/>
+    </target>
+
+    <target name="dist" depends="compile" description="Build Jar">
+        <!-- Create the distribution directory -->
+        <mkdir dir="${dist}"/>
+
+        <!-- Put everything in ${build} into jarfile {dist}/MarioForever.jar -->
+        <jar jarfile="${dist}/MarioForever.jar" basedir="${build}"
+                manifest="MANIFEST.MF"/>
+    </target>
+
+    <!-- run FrameLauncher from the jarfile -->
+    <target name="frameLauncher" depends="clean, dist" description="Run the Generated Jar">
+        <java classname="com.mojang.mario.FrameLauncher" failonerror="true" fork="true" >
+            <classpath refid="FrameLauncher-classpath"/>
+        </java>
+    </target>
+
+    <!-- run FrameLauncher from the jarfile -->
+    <target name="levelEditor" depends="clean, compile" description="Run the Level Editor">
+        <java classname="com.mojang.mario.mapedit.LevelEditor" failonerror="true" fork="true" dir="${build}">
+            <classpath refid="LevelEditor-classpath"/>
+        </java>
+    </target>
+
+    <target name="clean" description="Cleanup">
+        <delete dir="${build}" failonerror="false"/>
+        <delete dir="${dist}" failonerror="false"/>
+    </target>
+
+</project>
